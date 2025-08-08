@@ -61,7 +61,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				brand: {
+					DEFAULT: 'hsl(var(--brand))',
+					foreground: 'hsl(var(--brand-foreground))'
 				}
+			},
+			fontFamily: {
+				sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui']
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
