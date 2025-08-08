@@ -14,6 +14,8 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
+  // GitHub Pages base path
+  base: mode === 'production' ? '/secure-portfolio-path/' : '/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
