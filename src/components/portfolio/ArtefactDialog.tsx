@@ -15,6 +15,7 @@ export type Artefact = {
   createdAt: string;
   reviewed?: boolean;
   reviewedAt?: string;
+  reviewNotes?: string;
 };
 
 interface ArtefactDialogProps {
@@ -44,6 +45,7 @@ export const ArtefactDialog: React.FC<ArtefactDialogProps> = ({ unit, onClose, o
       createdAt: new Date().toISOString(),
       reviewed: false,
       reviewedAt: undefined,
+      reviewNotes: "",
     };
     onSave(artefact);
     setTitle("");

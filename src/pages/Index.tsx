@@ -7,6 +7,7 @@ import CookieConsent from "@/components/portfolio/CookieConsent";
 import { UnitCard } from "@/components/portfolio/UnitCard";
 import { ArtefactDialog, Artefact } from "@/components/portfolio/ArtefactDialog";
 import { ArtefactReviewDialog } from "@/components/portfolio/ArtefactReviewDialog";
+import { UnitArtefactsDialog } from "@/components/portfolio/UnitArtefactsDialog";
 
 const STORAGE_KEY = "security_risk_portfolio_v1";
 
@@ -14,6 +15,7 @@ const Index = () => {
   const [artefacts, setArtefacts] = useState<Artefact[]>([]);
   const [dialogUnit, setDialogUnit] = useState<number | null>(null);
   const [reviewArtefact, setReviewArtefact] = useState<Artefact | null>(null);
+  const [unitList, setUnitList] = useState<number | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -24,6 +26,7 @@ const Index = () => {
           ...a,
           reviewed: a.reviewed ?? false,
           reviewedAt: a.reviewedAt,
+          reviewNotes: a.reviewNotes ?? "",
         })));
       } catch {
         /* ignore */
@@ -47,17 +50,24 @@ const Index = () => {
     setReviewArtefact(a);
   };
 
-  const markReviewed = (id: string) => {
-    setArtefacts(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, reviewed: true, reviewedAt: new Date().toISOString() } : item
-      )
-    );
-    toast({ title: "Marked as reviewed", description: "You can reopen it from Recent Artefacts." });
-    setReviewArtefact(null);
-  };
+const markReviewed = (id: string, notes?: string) => {
+  setArtefacts(prev =>
+    prev.map(item =>
+      item.id === id ? { ...item, reviewed: true, reviewedAt: new Date().toISOString(), reviewNotes: notes ?? item.reviewNotes } : item
+    )
+  );
+  setReviewArtefact(prev => (prev && prev.id === id ? { ...prev, reviewed: true, reviewedAt: new Date().toISOString(), reviewNotes: notes ?? prev.reviewNotes } : prev));
+  toast({ title: "Marked as reviewed", description: "You can reopen it from Recent Artefacts." });
+  setReviewArtefact(null);
+};
 
-  const recent = artefacts.slice(0, 5);
+const saveReviewNotes = (id: string, notes: string) => {
+  setArtefacts(prev => prev.map(item => (item.id === id ? { ...item, reviewNotes: notes } : item)));
+  setReviewArtefact(prev => (prev && prev.id === id ? { ...prev, reviewNotes: notes } : prev));
+  toast({ title: "Notes saved", description: "Your review notes have been updated." });
+};
+
+const recent = artefacts.slice(0, 5);
 
   return (
     <>
@@ -112,7 +122,14 @@ const Index = () => {
           <p className="text-muted-foreground mt-1">Aim to showcase at least one artefact per unit.</p>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 12 }, (_, i) => i + 1).map(unit => (
-              <UnitCard key={unit} unitNumber={unit} artifactsCount={artefactsByUnit.get(unit)?.length ?? 0} reviewedCount={(artefactsByUnit.get(unit)?.filter(a => a.reviewed).length) ?? 0} onAddClick={setDialogUnit} />
+              <UnitCard
+                key={unit}
+                unitNumber={unit}
+                artifactsCount={artefactsByUnit.get(unit)?.length ?? 0}
+                reviewedCount={(artefactsByUnit.get(unit)?.filter(a => a.reviewed).length) ?? 0}
+                onAddClick={setDialogUnit}
+                onViewClick={setUnitList}
+              />
             ))}
           </div>
         </section>
@@ -165,7 +182,14 @@ const Index = () => {
       <ArtefactReviewDialog
         artefact={reviewArtefact}
         onClose={() => setReviewArtefact(null)}
-        onMarkReviewed={() => reviewArtefact && markReviewed(reviewArtefact.id)}
+        onSaveNotes={(notes) => reviewArtefact && saveReviewNotes(reviewArtefact.id, notes)}
+        onMarkReviewed={(notes) => reviewArtefact && markReviewed(reviewArtefact.id, notes)}
+      />
+      <UnitArtefactsDialog
+        unit={unitList}
+        artefacts={unitList ? (artefactsByUnit.get(unitList) ?? []) : []}
+        onClose={() => setUnitList(null)}
+        onSelect={(a) => { setReviewArtefact(a); setUnitList(null); }}
       />
       <CookieConsent />
     </>

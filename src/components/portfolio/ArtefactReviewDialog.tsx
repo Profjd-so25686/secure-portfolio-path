@@ -2,17 +2,24 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Artefact } from "./ArtefactDialog";
 
 interface ArtefactReviewDialogProps {
   artefact: Artefact | null;
   onClose: () => void;
-  onMarkReviewed: () => void;
+  onSaveNotes: (notes: string) => void;
+  onMarkReviewed: (notes: string) => void;
 }
 
-export const ArtefactReviewDialog: React.FC<ArtefactReviewDialogProps> = ({ artefact, onClose, onMarkReviewed }) => {
+export const ArtefactReviewDialog: React.FC<ArtefactReviewDialogProps> = ({ artefact, onClose, onSaveNotes, onMarkReviewed }) => {
   const open = !!artefact;
   const reviewed = artefact?.reviewed ?? false;
+  const [notes, setNotes] = React.useState("");
+  React.useEffect(() => {
+    setNotes(artefact?.reviewNotes ?? "");
+  }, [artefact]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -51,13 +58,26 @@ export const ArtefactReviewDialog: React.FC<ArtefactReviewDialogProps> = ({ arte
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{artefact.summary || "No summary provided."}</p>
             </div>
 
+            <div className="grid gap-2">
+              <Label htmlFor="review-notes">Review Notes</Label>
+              <Textarea
+                id="review-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add feedback, actions, or follow-ups for this artefact"
+              />
+            </div>
+
             <p className="text-xs text-muted-foreground">Created {new Date(artefact.createdAt).toLocaleString()}</p>
           </div>
         )}
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Close</Button>
-          <Button variant="hero" onClick={onMarkReviewed} disabled={reviewed}> 
+          <Button variant="outline" onClick={() => onSaveNotes(notes)}>
+            Save Notes
+          </Button>
+          <Button variant="hero" onClick={() => onMarkReviewed(notes)} disabled={reviewed}>
             {reviewed ? "Already reviewed" : "Mark as reviewed"}
           </Button>
         </DialogFooter>
