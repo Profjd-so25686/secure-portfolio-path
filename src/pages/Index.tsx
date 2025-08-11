@@ -112,7 +112,7 @@ const Index = () => {
           <p className="text-muted-foreground mt-1">Aim to showcase at least one artefact per unit.</p>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 12 }, (_, i) => i + 1).map(unit => (
-              <UnitCard key={unit} unitNumber={unit} artifactsCount={artefactsByUnit.get(unit)?.length ?? 0} onAddClick={setDialogUnit} />
+              <UnitCard key={unit} unitNumber={unit} artifactsCount={artefactsByUnit.get(unit)?.length ?? 0} reviewedCount={(artefactsByUnit.get(unit)?.filter(a => a.reviewed).length) ?? 0} onAddClick={setDialogUnit} />
             ))}
           </div>
         </section>

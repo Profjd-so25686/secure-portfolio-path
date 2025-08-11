@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 interface UnitCardProps {
   unitNumber: number;
   artifactsCount: number;
+  reviewedCount: number;
   onAddClick: (unit: number) => void;
 }
 
-export const UnitCard = ({ unitNumber, artifactsCount, onAddClick }: UnitCardProps) => {
+export const UnitCard = ({ unitNumber, artifactsCount, reviewedCount, onAddClick }: UnitCardProps) => {
   return (
     <article className="group relative overflow-hidden rounded-xl border bg-card transition-transform hover:-translate-y-0.5 hover:shadow-lg">
       <Card>
@@ -23,6 +24,7 @@ export const UnitCard = ({ unitNumber, artifactsCount, onAddClick }: UnitCardPro
           <p className="text-sm text-muted-foreground">
             Add evidence of your learning for this unit: designs, code, notes, discussions, or feedback.
           </p>
+          <p className="mt-2 text-xs text-muted-foreground">Reviewed: {reviewedCount}/{artifactsCount}</p>
           <div className="mt-4">
             <Button variant="outline" className="rounded-full" onClick={() => onAddClick(unitNumber)}>
               Add Artefact
