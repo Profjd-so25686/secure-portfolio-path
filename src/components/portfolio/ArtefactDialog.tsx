@@ -13,6 +13,8 @@ export type Artefact = {
   link?: string;
   summary: string;
   createdAt: string;
+  reviewed?: boolean;
+  reviewedAt?: string;
 };
 
 interface ArtefactDialogProps {
@@ -40,6 +42,8 @@ export const ArtefactDialog: React.FC<ArtefactDialogProps> = ({ unit, onClose, o
       link: link.trim() || undefined,
       summary,
       createdAt: new Date().toISOString(),
+      reviewed: false,
+      reviewedAt: undefined,
     };
     onSave(artefact);
     setTitle("");

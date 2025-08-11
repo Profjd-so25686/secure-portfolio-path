@@ -1,20 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
 import CookieConsent from "@/components/portfolio/CookieConsent";
 import { UnitCard } from "@/components/portfolio/UnitCard";
 import { ArtefactDialog, Artefact } from "@/components/portfolio/ArtefactDialog";
+import { ArtefactReviewDialog } from "@/components/portfolio/ArtefactReviewDialog";
 
 const STORAGE_KEY = "security_risk_portfolio_v1";
 
 const Index = () => {
   const [artefacts, setArtefacts] = useState<Artefact[]>([]);
   const [dialogUnit, setDialogUnit] = useState<number | null>(null);
+  const [reviewArtefact, setReviewArtefact] = useState<Artefact | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      try { setArtefacts(JSON.parse(raw)); } catch { /* ignore */ }
+      try {
+        const parsed = JSON.parse(raw) as any[];
+        setArtefacts(parsed.map((a) => ({
+          ...a,
+          reviewed: a.reviewed ?? false,
+          reviewedAt: a.reviewedAt,
+        })));
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 
@@ -29,7 +42,20 @@ const Index = () => {
     return map;
   }, [artefacts]);
 
-  const onSaveArtefact = (a: Artefact) => setArtefacts(prev => [a, ...prev]);
+  const onSaveArtefact = (a: Artefact) => {
+    setArtefacts(prev => [a, ...prev]);
+    setReviewArtefact(a);
+  };
+
+  const markReviewed = (id: string) => {
+    setArtefacts(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, reviewed: true, reviewedAt: new Date().toISOString() } : item
+      )
+    );
+    toast({ title: "Marked as reviewed", description: "You can reopen it from Recent Artefacts." });
+    setReviewArtefact(null);
+  };
 
   const recent = artefacts.slice(0, 5);
 
@@ -108,16 +134,27 @@ const Index = () => {
             <h2 className="text-2xl font-semibold">Recent Artefacts</h2>
             <div className="mt-4 grid gap-3">
               {recent.map(a => (
-                <article key={a.id} className="rounded-lg border p-4">
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setReviewArtefact(a)}
+                  className="text-left rounded-lg border p-4 hover:bg-muted/50 transition"
+                  aria-label={`Review artefact ${a.title}`}
+                >
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium">{a.title}</h3>
-                    <span className="text-xs text-muted-foreground">Unit {a.unit}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Unit {a.unit}</span>
+                      <Badge variant={a.reviewed ? "outline" : "secondary"}>
+                        {a.reviewed ? "Reviewed" : "New"}
+                      </Badge>
+                    </div>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{a.summary || a.type}</p>
                   {a.link && (
-                    <a href={a.link} className="mt-2 inline-block text-sm underline">View</a>
+                    <span className="mt-2 inline-block text-sm underline">Has link</span>
                   )}
-                </article>
+                </button>
               ))}
             </div>
           </section>
@@ -125,6 +162,11 @@ const Index = () => {
       </main>
 
       <ArtefactDialog unit={dialogUnit} onClose={() => setDialogUnit(null)} onSave={onSaveArtefact} />
+      <ArtefactReviewDialog
+        artefact={reviewArtefact}
+        onClose={() => setReviewArtefact(null)}
+        onMarkReviewed={() => reviewArtefact && markReviewed(reviewArtefact.id)}
+      />
       <CookieConsent />
     </>
   );
