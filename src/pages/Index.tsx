@@ -98,8 +98,8 @@ const recent = artefacts.slice(0, 5);
       <main>
         <section className="container pt-10 pb-16 hero-gradient">
           <p className="text-sm text-muted-foreground mb-4">[ 01 ] Cutting‑edge cybersecurity learning journey — document your development across the module.</p>
-          <h1 className="glitch text-5xl sm:text-7xl font-bold leading-[0.95]" data-text="SECURITY E‑PORTFOLIO">
-            SECURITY E‑PORTFOLIO
+          <h1 className="glitch text-5xl sm:text-7xl font-bold leading-[0.95]" data-text="Security & Risk Management Module">
+            Security & Risk Management Module
           </h1>
           <p className="mt-6 max-w-2xl text-muted-foreground">
             Capture designs, code, meeting notes, feedback, and reflections. Align submissions to grading criteria: knowledge, collaboration, criticality, and presentation.
