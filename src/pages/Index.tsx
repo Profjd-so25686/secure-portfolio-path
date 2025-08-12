@@ -91,6 +91,9 @@ const recent = artefacts.slice(0, 5);
           <Button variant="chip" asChild>
             <a href="#units">Units 1–12</a>
           </Button>
+          <Button variant="chip" asChild>
+            <a href="https://profjd-so25686.github.io/" target="_blank" rel="noopener noreferrer">Main Site</a>
+          </Button>
           <Button variant="hero" onClick={() => setDialogUnit(1)}>Add Artefact</Button>
         </nav>
       </header>
