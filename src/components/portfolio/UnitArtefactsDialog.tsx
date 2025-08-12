@@ -2,6 +2,7 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Artefact } from "./ArtefactDialog";
 
 interface UnitArtefactsDialogProps {
@@ -16,36 +17,40 @@ export const UnitArtefactsDialog: React.FC<UnitArtefactsDialogProps> = ({ unit, 
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Unit {unit ?? ""} Artefacts</DialogTitle>
           <DialogDescription>Click an artefact to open it for review.</DialogDescription>
         </DialogHeader>
 
         {artefacts.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No artefacts added for this unit yet.</p>
+          <ScrollArea className="max-h-[70vh] pr-2">
+            <p className="text-sm text-muted-foreground">No artefacts added for this unit yet.</p>
+          </ScrollArea>
         ) : (
-          <div className="grid gap-2">
-            {artefacts.map((a) => (
-              <button
-                key={a.id}
-                type="button"
-                onClick={() => { onSelect(a); }}
-                className="text-left rounded-lg border p-3 hover:bg-muted/50 transition"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium leading-tight">{a.title}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-1">{a.summary || a.type}</p>
+          <ScrollArea className="max-h-[70vh] pr-2">
+            <div className="grid gap-2">
+              {artefacts.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => { onSelect(a); }}
+                  className="text-left rounded-lg border p-3 hover:bg-muted/50 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium leading-tight">{a.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{a.summary || a.type}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleDateString()}</span>
+                      <Badge variant={a.reviewed ? "outline" : "secondary"}>{a.reviewed ? "Reviewed" : "New"}</Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleDateString()}</span>
-                    <Badge variant={a.reviewed ? "outline" : "secondary"}>{a.reviewed ? "Reviewed" : "New"}</Badge>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
         )}
 
         <DialogFooter>
