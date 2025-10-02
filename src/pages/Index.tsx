@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,35 +9,35 @@ import { UnitCard } from "@/components/portfolio/UnitCard";
 import { ArtefactDialog, Artefact } from "@/components/portfolio/ArtefactDialog";
 import { ArtefactReviewDialog } from "@/components/portfolio/ArtefactReviewDialog";
 import { UnitArtefactsDialog } from "@/components/portfolio/UnitArtefactsDialog";
-
-const STORAGE_KEY = "security_risk_portfolio_v1";
+import { useAuth } from "@/hooks/useAuth";
+import { useArtefacts } from "@/hooks/useArtefacts";
+import { LogOut } from "lucide-react";
 
 const Index = () => {
-  const [artefacts, setArtefacts] = useState<Artefact[]>([]);
+  const navigate = useNavigate();
+  const { user, isLoading: authLoading, signOut } = useAuth();
+  const { artefacts, isLoading: artefactsLoading, saveArtefact, updateArtefact } = useArtefacts(user?.id);
   const [dialogUnit, setDialogUnit] = useState<number | null>(null);
   const [reviewArtefact, setReviewArtefact] = useState<Artefact | null>(null);
   const [unitList, setUnitList] = useState<number | null>(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as any[];
-        setArtefacts(parsed.map((a) => ({
-          ...a,
-          reviewed: a.reviewed ?? false,
-          reviewedAt: a.reviewedAt,
-          reviewNotes: a.reviewNotes ?? "",
-        })));
-      } catch {
-        /* ignore */
-      }
+    if (!authLoading && !user) {
+      navigate("/auth");
     }
-  }, []);
+  }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(artefacts));
-  }, [artefacts]);
+  if (authLoading || artefactsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const artefactsByUnit = useMemo(() => {
     const map = new Map<number, Artefact[]>();
@@ -46,26 +47,37 @@ const Index = () => {
   }, [artefacts]);
 
   const onSaveArtefact = (a: Artefact) => {
-    setArtefacts(prev => [a, ...prev]);
+    saveArtefact(a);
     setReviewArtefact(a);
   };
 
-const markReviewed = (id: string, notes?: string) => {
-  setArtefacts(prev =>
-    prev.map(item =>
-      item.id === id ? { ...item, reviewed: true, reviewedAt: new Date().toISOString(), reviewNotes: notes ?? item.reviewNotes } : item
-    )
-  );
-  setReviewArtefact(prev => (prev && prev.id === id ? { ...prev, reviewed: true, reviewedAt: new Date().toISOString(), reviewNotes: notes ?? prev.reviewNotes } : prev));
-  toast({ title: "Marked as reviewed", description: "You can reopen it from Recent Artefacts." });
-  setReviewArtefact(null);
-};
+  const markReviewed = (id: string, notes?: string) => {
+    const artefact = artefacts.find(a => a.id === id);
+    if (artefact) {
+      const updated = {
+        ...artefact,
+        reviewed: true,
+        reviewedAt: new Date().toISOString(),
+        reviewNotes: notes ?? artefact.reviewNotes
+      };
+      updateArtefact(updated);
+      setReviewArtefact(null);
+    }
+  };
 
-const saveReviewNotes = (id: string, notes: string) => {
-  setArtefacts(prev => prev.map(item => (item.id === id ? { ...item, reviewNotes: notes } : item)));
-  setReviewArtefact(prev => (prev && prev.id === id ? { ...prev, reviewNotes: notes } : prev));
-  toast({ title: "Notes saved", description: "Your review notes have been updated." });
-};
+  const saveReviewNotes = (id: string, notes: string) => {
+    const artefact = artefacts.find(a => a.id === id);
+    if (artefact) {
+      const updated = { ...artefact, reviewNotes: notes };
+      updateArtefact(updated);
+      setReviewArtefact(prev => (prev && prev.id === id ? { ...prev, reviewNotes: notes } : prev));
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
 const recent = artefacts.slice(0, 5);
 
@@ -95,6 +107,9 @@ const recent = artefacts.slice(0, 5);
             <a href="https://profjd-so25686.github.io/" target="_blank" rel="noopener noreferrer">Main Site</a>
           </Button>
           <Button variant="hero" onClick={() => setDialogUnit(1)}>Add Artefact</Button>
+          <Button variant="outline" onClick={handleSignOut} size="icon" title="Sign Out">
+            <LogOut className="h-4 w-4" />
+          </Button>
         </nav>
       </header>
 
